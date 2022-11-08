@@ -267,6 +267,7 @@ def main():
     global webSocket
     outfile = None
 
+    #実行時引数の設定
     argparser = argparse.ArgumentParser(
         description=__doc__)
     argparser.add_argument(
@@ -322,14 +323,16 @@ def main():
     args = argparser.parse_args()
 
     # print(args)
-
+    #fpsが引数の時の処理
     if args.fps is not None:
         update_freq = 1.0 / args.fps if args.fps > 0.0 else 0.0
 
+    #vidの引数の時の処理（車両の情報がリストにない時用）
     if args.vid is None and args.list is False:
         print('argument --vid or --list is required')
         sys.exit()
 
+    #.get_worldでシミュレーション上でアクティブなオブジェクトを取得
     client = carla.Client(args.host, args.port)
     client.set_timeout(2.0)
     print('connecting carla')
@@ -340,10 +343,12 @@ def main():
         sys.exit()
     print('connected')
 
+    #-lが引数の時の処理
     if args.list:
         list_options(client)
         sys.exit()
-
+    
+    #-outが引数の時の処理
     if args.out is True:
         if os.path.isfile(args.outfile):
             if yes_no_input('\'' + args.outfile + '\' is exists. overrite ? [y/N]:') is False:
@@ -352,6 +357,10 @@ def main():
 
     elapsed_time = 0.0
 
+    #シミュレーション上に存在する引数に指定した車両の情報を取得
+    #なかった時の例外処理
+    #-v,-verboseが指定されたときは情報を表示
+    #指定したtype_idが車両じゃなかったときの処理
     vehicle = world.get_actors().find(args.vid)
     if vehicle is None:
         print('vehicle not found')
@@ -362,6 +371,8 @@ def main():
         print('actor is not a vehicle')
         sys.exit()
 
+    #-sdlが引数の時の処理
+    #カーナビとかとスマホをつなぐための処理
     if args.sdl is not None:
         try:
             # WebSocket connect
